@@ -8,7 +8,6 @@ import {
 } from "react-native";
 import Modal from "react-native-modal";
 export const Details = ({ visible, data, onClose }) => {
-  console.log(data);
   return (
     <Modal
       isVisible={visible}

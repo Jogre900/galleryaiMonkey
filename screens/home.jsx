@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
   View,
-  Text,
   TouchableOpacity,
   FlatList,
   Image,
@@ -9,9 +8,12 @@ import {
   Dimensions,
   PixelRatio,
 } from "react-native";
+import { useFocusEffect } from "@react-navigation/native";
 import axios from "axios";
 import { storage } from "../assets/storage";
+import { requestPhoto } from "../helper";
 import { Details } from "./details";
+
 const { width } = Dimensions.get("screen");
 const IMG_WIDTH = Math.floor(width / 3);
 const IMG_HEIGHT = Math.floor(width / 3);
@@ -20,39 +22,38 @@ export const Home = () => {
   const [photos, setPhotos] = useState([]);
   const [options, setOptions] = useState({
     page: 1,
-    limit: 5,
+    limit: 30,
   });
   const [modal, setModal] = useState({
     visible: false,
     data: null,
   });
-
-  const requestPhoto = async () => {
-    const data = await storage.getItem("imgArray");
-    if (data) {
-      const parseData = JSON.parse(data);
-      setPhotos(parseData);
-      return;
-    }
+  const fetchStorage = async () => {
+    const storageData = await storage.getItem("imgArray");
+      if (storageData) {
+        setPhotos(JSON.parse(storageData));
+      }
+  }
+  const fetchData = async () => {
     try {
-      console.log("me ejecute");
-      const res = await axios.get(
-        `https://picsum.photos/v2/list?page=${options.page}&limit=${options.limit}`
-      );
-      if(res){
-          await storage.removeItem("imgArray");
-          setPhotos(prev => (prev.concat(res.data)));
-          await storage.setItem("imgArray", JSON.stringify(photos));
-          setOptions(values => ({...values, page: options.page + 1}))
-        }
+      const data = await requestPhoto(options.page, options.limit);
+
+      if (data) {
+        setPhotos((prev) => prev.concat(data));
+        setOptions((values) => ({ ...values, page: options.page + 1 }));
+      }
     } catch (error) {
       console.log(error);
     }
   };
   useEffect(() => {
-    requestPhoto();
+    fetchData();
   }, []);
-
+//   useFocusEffect(
+//     React.useCallback(() => {
+//       fetchStorage()
+//     }, [])
+//   );
   const RenderItem = ({ item }) => {
     return (
       <TouchableOpacity onPress={() => setModal({ visible: true, data: item })}>
@@ -71,13 +72,13 @@ export const Home = () => {
           renderItem={RenderItem}
           numColumns={3}
           keyExtractor={(item) => item.id}
-          initialNumToRender={20}
+          initialNumToRender={30}
           getItemLayout={(_, index) => ({
             length: IMG_HEIGHT,
             offset: IMG_HEIGHT * index,
             index,
           })}
-          onEndReached={requestPhoto}
+          onEndReached={fetchData}
           onEndReachedThreshold={0.7}
         />
       )}
