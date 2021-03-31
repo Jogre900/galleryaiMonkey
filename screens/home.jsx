@@ -9,7 +9,6 @@ import {
   PixelRatio,
 } from "react-native";
 import { useFocusEffect } from "@react-navigation/native";
-import axios from "axios";
 import { storage } from "../assets/storage";
 import { requestPhoto } from "../helper";
 import { Details } from "./details";
@@ -17,6 +16,7 @@ import { Details } from "./details";
 const { width } = Dimensions.get("screen");
 const IMG_WIDTH = Math.floor(width / 3);
 const IMG_HEIGHT = Math.floor(width / 3);
+
 
 export const Home = () => {
   const [photos, setPhotos] = useState([]);
@@ -49,11 +49,11 @@ export const Home = () => {
   useEffect(() => {
     fetchData();
   }, []);
-//   useFocusEffect(
-//     React.useCallback(() => {
-//       fetchStorage()
-//     }, [])
-//   );
+  useFocusEffect(
+    React.useCallback(() => {
+      fetchStorage()
+    }, [])
+  );
   const RenderItem = ({ item }) => {
     return (
       <TouchableOpacity onPress={() => setModal({ visible: true, data: item })}>
